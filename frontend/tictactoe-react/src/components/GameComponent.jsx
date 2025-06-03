@@ -13,12 +13,24 @@ export default function GameComponent() {
   const [x, setX] = useState(0);
   const [z, setZ] = useState(0);
 
+  const [x_moves, set_x_moves] = useState(null);
+  const [o_moves, set_o_moves] = useState(null);
+
   const [board, setBoard] = useState({ moves: [], turn: "X", victory: false });
 
   const socketRef = useRef(null);
 
   useEffect(() => {
-    socketRef.current = io("http://localhost:3000");
+    const storedRole = localStorage.getItem("playerRole");
+    socketRef.current = io("http://localhost:3000", {
+      auth: {
+        role: storedRole || null,
+      },
+    });
+
+    socketRef.current.on("assignedRole", (role) => {
+      localStorage.setItem("playerRole", role);
+    });
 
     socketRef.current.on("state", (state) => {
       setBoard(state);
@@ -29,7 +41,8 @@ export default function GameComponent() {
     });
 
     socketRef.current.on("makeMove", (playerMoves) => {
-      console.log("Jogadas recebidas:", playerMoves);
+      console.log("Jogadas recebidas :", playerMoves);
+      console.log("Jogadas recebidas keys:", Object.keys(playerMoves));
     });
 
     return () => {

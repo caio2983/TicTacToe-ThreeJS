@@ -42,6 +42,8 @@ io.on("connection", (socket) => {
 
   socket.on("makeMove", (data) => {
     console.log("Move made by", data);
+    const moveKey = data.join(",");
+
     player_who_moved = players.find((player) => player.id === socket.id);
     playerMoves.set(data, player_who_moved.role);
     console.log(playerMoves);
