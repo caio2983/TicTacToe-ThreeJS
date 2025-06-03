@@ -28,6 +28,10 @@ export default function GameComponent() {
       console.log("Conectado com ID:", socketRef.current.id);
     });
 
+    socketRef.current.on("makeMove", (playerMoves) => {
+      console.log("Jogadas recebidas:", playerMoves);
+    });
+
     return () => {
       socketRef.current.disconnect();
     };

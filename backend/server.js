@@ -23,6 +23,9 @@ const playerMoves = new Map();
 const boards = new Map();
 
 io.on("connection", (socket) => {
+  const room = "default";
+  if (!boards.has(room)) boards.set(room, EMPTY_BOARD());
+  socket.join(room);
   if (players.length < 2) {
     const role = players.length === 1 ? "X" : "O";
     players.push({ id: socket.id, role: role });
@@ -38,16 +41,12 @@ io.on("connection", (socket) => {
   console.log("Novo cliente conectado:", socket.id);
 
   socket.on("makeMove", (data) => {
-    const room = "default";
-    if (!boards.has(room)) boards.set(room, EMPTY_BOARD());
-    socket.join(room);
-
     console.log("Move made by", data);
     player_who_moved = players.find((player) => player.id === socket.id);
     playerMoves.set(data, player_who_moved.role);
     console.log(playerMoves);
 
-    io.emit("moveMade", playerMoves);
+    io.emit("makeMove", Object.fromEntries(playerMoves));
   });
 
   socket.on("disconnect", () => {
