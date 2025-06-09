@@ -42,7 +42,8 @@ export default function GameComponent() {
 
     socketRef.current.on("makeMove", (playerMoves) => {
       console.log("Jogadas recebidas :", playerMoves);
-      console.log("Jogadas recebidas keys:", Object.keys(playerMoves));
+      console.log("Jogadas recebidas keys:", Object.entries(playerMoves));
+      console.log("Jogadas recebidas values:", Object.values(playerMoves));
     });
 
     return () => {
