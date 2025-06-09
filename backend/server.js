@@ -113,6 +113,7 @@ const EMPTY_BOARD = () => ({
   moves_O: [],
   turn: "X",
   victory: false,
+  draw: false,
 });
 
 const players = [];
@@ -161,6 +162,14 @@ io.on("connection", (socket) => {
       if (victoryCheck(move, current_board.moves_O)) {
         current_board.victory = true;
         console.log("Vitória do jogador O");
+      }
+
+      console.log("O length: ", current_board.moves_O.length);
+      console.log("X length: ", current_board.moves_X.length);
+
+      if (current_board.moves_O.length + current_board.moves_X.length == 9) {
+        current_board.draw = true;
+        console.log("Empate");
       }
     }
 

@@ -8,6 +8,7 @@ import BoxSelected from "./BoxSelected";
 import VictoryAlert from "./VictoryAlert";
 
 import { io } from "socket.io-client";
+import DrawAlert from "./DrawAlert";
 
 export default function GameComponent() {
   const [x, setX] = useState(0);
@@ -21,6 +22,7 @@ export default function GameComponent() {
       moves_O: [],
       turn: "X",
       victory: false,
+      draw: false,
     },
   });
 
@@ -52,6 +54,12 @@ export default function GameComponent() {
       console.log(currentBoard);
       setBoard(currentBoard);
       setVictory(currentBoard.default.victory);
+      if (
+        !board.default.victory &&
+        board.default.moves_O.length + board.default.moves_X.length === 9
+      ) {
+        setDraw(true);
+      }
     });
 
     return () => {
@@ -60,6 +68,7 @@ export default function GameComponent() {
   }, []);
 
   const [isVictory, setVictory] = useState(false);
+  const [isDraw, setDraw] = useState(false);
 
   // The function below is executed when the user clicks the button in VictoryAlert component
   function resetGame() {
@@ -69,12 +78,18 @@ export default function GameComponent() {
         moves_O: [],
         turn: "X",
         victory: false,
+        draw: false,
       },
     });
 
     setVictory(false);
+    setDraw(false);
 
     socketRef.current.emit("resetBoard");
+  }
+
+  function testLength() {
+    console.log(board.default.moves_O.length + board.default.moves_X.length);
   }
 
   useEffect(() => {
@@ -109,7 +124,10 @@ export default function GameComponent() {
 
   return (
     <>
+      <button onClick={resetGame}>Reset</button>
+      <button onClick={testLength}>Test</button>
       {isVictory && <VictoryAlert onReset={resetGame} />}
+      {isDraw && <DrawAlert onReset={resetGame}></DrawAlert>}
       <Canvas camera={{ position: [2, 2, 2], fov: 85 }} className="canvas">
         <ambientLight intensity={0.5} />
         <pointLight position={[10, 10, 10]} />
