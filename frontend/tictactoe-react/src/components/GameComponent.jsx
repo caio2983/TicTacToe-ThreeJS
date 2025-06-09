@@ -13,9 +13,6 @@ export default function GameComponent() {
   const [x, setX] = useState(0);
   const [z, setZ] = useState(0);
 
-  const [x_moves, set_x_moves] = useState(null);
-  const [o_moves, set_o_moves] = useState(null);
-
   const [board, setBoard] = useState({ moves: [], turn: "X", victory: false });
 
   const socketRef = useRef(null);
@@ -34,6 +31,7 @@ export default function GameComponent() {
 
     socketRef.current.on("state", (state) => {
       setBoard(state);
+      console.log("state", state);
     });
 
     socketRef.current.on("connect", () => {
@@ -190,10 +188,10 @@ export default function GameComponent() {
           setZ((prev) => (prev + 1 > 1 ? -1 : prev + 1));
           break;
         case " ":
-          // setSelectedPositions((prev) => {
-          //   const exists = prev.some((pos) => pos.x === x && pos.z === z);
-          //   return exists ? prev : [...prev, { x, z }];
-          // });
+          setSelectedPositions((prev) => {
+            const exists = prev.some((pos) => pos.x === x && pos.z === z);
+            return exists ? prev : [...prev, { x, z }];
+          });
 
           socketRef.current.emit("makeMove", [x, z]);
 
