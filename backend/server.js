@@ -12,6 +12,102 @@ const io = new Server(httpServer, {
   },
 });
 
+function checkDiagonals(x, z) {
+  const rightEdges = [
+    { x: 1, z: 1 },
+    { x: 1, z: -1 },
+  ];
+  const leftEdges = [
+    { x: -1, z: 1 },
+
+    { x: -1, z: -1 },
+  ];
+
+  const isCenter = x === 0 && z === 0;
+  const isLeftEdge = leftEdges.some((pos) => pos.x === x && pos.z === z);
+  const isRightEdge = rightEdges.some((pos) => pos.x === x && pos.z === z);
+
+  if (!isCenter && !isLeftEdge && !isRightEdge) return [];
+
+  const results = [
+    ...(isCenter
+      ? [
+          { x: -1, z: 1 },
+          { x: 1, z: -1 },
+          { x: -1, z: -1 },
+          { x: 1, z: 1 },
+        ]
+      : []),
+    ...(isLeftEdge
+      ? [
+          { x: x + 1, z: z - 1 < -1 ? z + 1 : z - 1 },
+          { x: x + 2, z: z - 1 < -1 ? z + 2 : z - 2 },
+        ]
+      : []),
+    ...(isRightEdge
+      ? [
+          { x: x - 1, z: z - 1 < -1 ? z + 1 : z - 1 },
+          { x: x - 2, z: z - 1 < -1 ? z + 2 : z - 2 },
+        ]
+      : []),
+  ];
+
+  return results;
+}
+
+// When a player selects a position , this function returns the positions that need to be filled in order to achieve victory
+function victoryPositions(x, z) {
+  const xMinus1 = x - 1 < -1 ? -1 : x - 1;
+  const xPlus1 = x + 1 > 1 ? 1 : x + 1;
+  const zMinus1 = z - 1 < -1 ? -1 : z - 1;
+  const zPlus1 = z + 1 > 1 ? 1 : z + 1;
+
+  const diagonals = checkDiagonals(x, z);
+
+  const rows = [
+    { x: xMinus1, z: z },
+    { x: xPlus1, z: z },
+    ...(x + 1 > 1 ? [{ x: xPlus1 - 2, z: z }] : []),
+    ...(x - 1 < -1 ? [{ x: xPlus1 + 1, z: z }] : []),
+  ];
+
+  const columns = [
+    { x: x, z: zPlus1 },
+    { x: x, z: zMinus1 },
+    ...(z + 1 > 1 ? [{ x: x, z: zPlus1 - 2 }] : []),
+    ...(z - 1 < -1 ? [{ x: x, z: zPlus1 + 1 }] : []),
+  ];
+
+  return {
+    diagonals,
+    rows,
+    columns,
+  };
+}
+
+function checkGroup(group, playerMoves) {
+  return (
+    group.length > 0 &&
+    group.every((pos) =>
+      playerMoves.some((move) => move[0] === pos.x && move[1] === pos.z)
+    )
+  );
+}
+
+function victoryCheck([x, z], playerMoves) {
+  const { diagonals, rows, columns } = victoryPositions(x, z);
+
+  if (
+    checkGroup(diagonals, playerMoves) ||
+    checkGroup(rows, playerMoves) ||
+    checkGroup(columns, playerMoves)
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
 const EMPTY_BOARD = () => ({
   moves_X: [],
   moves_O: [],
@@ -41,26 +137,44 @@ io.on("connection", (socket) => {
   }
 
   console.log("Novo cliente conectado:", socket.id);
-
   socket.on("makeMove", (data) => {
     const player_who_moved = players.find((player) => player.id === socket.id);
     const current_board = boards.get("default");
 
-    if (player_who_moved.role === "X") {
-      current_board.moves_X.push(data);
-      current_board.turn = "O";
-    } else {
-      current_board.moves_O.push(data);
-      current_board.turn = "X";
-    }
+    if (!player_who_moved || current_board.victory) return;
 
-    console.log("Move made by", player_who_moved);
+    const { role } = player_who_moved;
+    const move = data; // data = [x, z]
+
+    if (role === "X") {
+      current_board.moves_X.push(move);
+      current_board.turn = "O";
+
+      if (victoryCheck(move, current_board.moves_X)) {
+        current_board.victory = true;
+        console.log("Vitória do jogador X");
+      }
+    } else {
+      current_board.moves_O.push(move);
+      current_board.turn = "X";
+
+      if (victoryCheck(move, current_board.moves_O)) {
+        current_board.victory = true;
+        console.log("Vitória do jogador O");
+      }
+    }
 
     io.emit("makeMove", Object.fromEntries(boards));
   });
 
   socket.on("disconnect", () => {
     console.log("Cliente saiu:", socket.id);
+  });
+
+  socket.on("resetBoard", () => {
+    boards.set("default", EMPTY_BOARD());
+    io.emit("makeMove", Object.fromEntries(boards));
+    console.log("board reseted by client:", socket.id);
   });
 });
 

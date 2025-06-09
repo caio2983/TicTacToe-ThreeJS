@@ -4,7 +4,7 @@ import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import Box from "./Box";
 import BoxSelected from "./BoxSelected";
-import SphereTest from "./SphereTest";
+
 import VictoryAlert from "./VictoryAlert";
 
 import { io } from "socket.io-client";
@@ -13,7 +13,14 @@ export default function GameComponent() {
   const [x, setX] = useState(0);
   const [z, setZ] = useState(0);
 
-  const [board, setBoard] = useState({ moves: [], turn: "X", victory: false });
+  const [board, setBoard] = useState({
+    default: {
+      moves_X: [],
+      moves_O: [],
+      turn: "X",
+      victory: false,
+    },
+  });
 
   const socketRef = useRef(null);
 
@@ -39,8 +46,9 @@ export default function GameComponent() {
     });
 
     socketRef.current.on("makeMove", (currentBoard) => {
-      setBoard(currentBoard);
       console.log(currentBoard);
+      setBoard(currentBoard);
+      setVictory(currentBoard.default.victory);
     });
 
     return () => {
@@ -48,126 +56,23 @@ export default function GameComponent() {
     };
   }, []);
 
-  // Positions that the user selected to place a piece
-
-  // The three states below are used to verify a possible victory in each piece placement
-  const [testVictoryColumns, setTestVictoryColumns] = useState([]);
-  const [testVictoryRows, setTestVictoryRows] = useState([]);
-  const [testVictoryDiagonals, setTestVictoryDiagonals] = useState([]);
-
   const [isVictory, setVictory] = useState(false);
 
   // The function below is executed when the user clicks the button in VictoryAlert component
   function resetGame() {
-    setX(0);
-    setZ(0);
-    // setSelectedPositions([]);
-    setTestVictoryColumns([]);
-    setTestVictoryRows([]);
-    setTestVictoryDiagonals([]);
+    setBoard({
+      default: {
+        moves_X: [],
+        moves_O: [],
+        turn: "X",
+        victory: false,
+      },
+    });
+
     setVictory(false);
+
+    socketRef.current.emit("resetBoard");
   }
-
-  function checkDiagonals(x, z) {
-    const rightEdges = [
-      { x: 1, z: 1 },
-      { x: 1, z: -1 },
-    ];
-    const leftEdges = [
-      { x: -1, z: 1 },
-
-      { x: -1, z: -1 },
-    ];
-
-    const isCenter = x === 0 && z === 0;
-    const isLeftEdge = leftEdges.some((pos) => pos.x === x && pos.z === z);
-    const isRightEdge = rightEdges.some((pos) => pos.x === x && pos.z === z);
-
-    if (!isCenter && !isLeftEdge && !isRightEdge) return [];
-
-    const results = [
-      ...(isCenter
-        ? [
-            { x: -1, z: 1 },
-            { x: 1, z: -1 },
-            { x: -1, z: -1 },
-            { x: 1, z: 1 },
-          ]
-        : []),
-      ...(isLeftEdge
-        ? [
-            { x: x + 1, z: z - 1 < -1 ? z + 1 : z - 1 },
-            { x: x + 2, z: z - 1 < -1 ? z + 2 : z - 2 },
-          ]
-        : []),
-      ...(isRightEdge
-        ? [
-            { x: x - 1, z: z - 1 < -1 ? z + 1 : z - 1 },
-            { x: x - 2, z: z - 1 < -1 ? z + 2 : z - 2 },
-          ]
-        : []),
-    ];
-
-    return results;
-  }
-
-  // When a player selects a position , this function returns the positions that need to be filled in order to achieve victory
-  function victoryPositions(x, z) {
-    const xMinus1 = x - 1 < -1 ? -1 : x - 1;
-    const xPlus1 = x + 1 > 1 ? 1 : x + 1;
-    const zMinus1 = z - 1 < -1 ? -1 : z - 1;
-    const zPlus1 = z + 1 > 1 ? 1 : z + 1;
-
-    const diagonals = checkDiagonals(x, z);
-
-    const rows = [
-      { x: xMinus1, z: z },
-      { x: xPlus1, z: z },
-      ...(x + 1 > 1 ? [{ x: xPlus1 - 2, z: z }] : []),
-      ...(x - 1 < -1 ? [{ x: xPlus1 + 1, z: z }] : []),
-    ];
-
-    const columns = [
-      { x: x, z: zPlus1 },
-      { x: x, z: zMinus1 },
-      ...(z + 1 > 1 ? [{ x: x, z: zPlus1 - 2 }] : []),
-      ...(z - 1 < -1 ? [{ x: x, z: zPlus1 + 1 }] : []),
-    ];
-
-    return {
-      diagonals,
-      rows,
-      columns,
-    };
-  }
-
-  // function victoryCheck() {
-  //   const checkGroup = (group) =>
-  //     group.length > 0 &&
-  //     group.every((pos) =>
-  //       selectedPositions.some(
-  //         (selected) => selected.x === pos.x && selected.z === pos.z
-  //       )
-  //     );
-
-  //   if (
-  //     checkGroup(testVictoryColumns) ||
-  //     checkGroup(testVictoryRows) ||
-  //     checkGroup(testVictoryDiagonals)
-  //   ) {
-  //     console.log("Vitória!");
-  //     setVictory(true);
-  //   }
-  // }
-
-  // useEffect(() => {
-  //   victoryCheck();
-  // }, [
-  //   selectedPositions,
-  //   testVictoryColumns,
-  //   testVictoryRows,
-  //   testVictoryDiagonals,
-  // ]);
 
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -186,16 +91,7 @@ export default function GameComponent() {
           setZ((prev) => (prev + 1 > 1 ? -1 : prev + 1));
           break;
         case " ":
-          // setSelectedPositions((prev) => {
-          //   const exists = prev.some((pos) => pos.x === x && pos.z === z);
-          //   return exists ? prev : [...prev, { x, z }];
-          // });
-
           socketRef.current.emit("makeMove", [x, z]);
-
-          // setTestVictoryColumns(victoryPositions(x, z).columns);
-          // setTestVictoryRows(victoryPositions(x, z).rows);
-          // setTestVictoryDiagonals(victoryPositions(x, z).diagonals);
 
           break;
         default:
@@ -237,24 +133,6 @@ export default function GameComponent() {
               z={position[1]}
               color="red"
             />
-          </>
-        ))}
-
-        {testVictoryColumns.map((pos, index) => (
-          <>
-            <SphereTest key={index} x={pos.x} z={pos.z} />
-          </>
-        ))}
-
-        {testVictoryRows.map((pos, index) => (
-          <>
-            <SphereTest key={index} x={pos.x} z={pos.z} />
-          </>
-        ))}
-
-        {testVictoryDiagonals.map((pos, index) => (
-          <>
-            <SphereTest key={index} x={pos.x} z={pos.z} />
           </>
         ))}
 
