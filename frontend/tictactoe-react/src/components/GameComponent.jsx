@@ -2,8 +2,6 @@ import React, { useEffect, useRef, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
-import Box from "./Box";
-import BoxSelected from "./BoxSelected";
 
 import VictoryAlert from "./VictoryAlert";
 
@@ -11,10 +9,14 @@ import { io } from "socket.io-client";
 import DrawAlert from "./DrawAlert";
 import OPiece from "./pieces/OPiece";
 import XPiece from "./pieces/XPiece";
+import { InfiniteGridHelper } from "./grid";
+import NeonRedGrid3x3 from "./NeonRedGrid3x3";
 
 export default function GameComponent() {
   const [x, setX] = useState(0);
   const [z, setZ] = useState(0);
+  const infiniteGridHelper = new InfiniteGridHelper();
+  infiniteGridHelper.position.y = -5;
 
   const [role, setRole] = useState("");
 
@@ -176,7 +178,9 @@ export default function GameComponent() {
         ))}
 
         <primitive object={new THREE.AxesHelper(0)} />
-        <primitive object={new THREE.GridHelper(3, 3)} />
+        {/* <primitive object={new THREE.GridHelper(3, 3)} /> */}
+        <NeonRedGrid3x3></NeonRedGrid3x3>
+        <primitive object={infiniteGridHelper} />
         <OrbitControls enabled={!isVictory} />
       </Canvas>
     </>
