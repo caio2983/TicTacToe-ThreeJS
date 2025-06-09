@@ -9,6 +9,8 @@ import VictoryAlert from "./VictoryAlert";
 
 import { io } from "socket.io-client";
 import DrawAlert from "./DrawAlert";
+import OPiece from "./pieces/OPiece";
+import XPiece from "./pieces/XPiece";
 
 export default function GameComponent() {
   const [x, setX] = useState(0);
@@ -132,31 +134,32 @@ export default function GameComponent() {
         <ambientLight intensity={0.5} />
         <pointLight position={[10, 10, 10]} />
 
-        {role == board.default.turn && <Box x={x} z={z} />}
+        {role === board.default.turn ? (
+          role === "O" ? (
+            <OPiece x={x} z={z} color="orange" notSelected={true} />
+          ) : (
+            <XPiece x={x} z={z} color="orange" notSelected={true}></XPiece>
+          )
+        ) : null}
 
         {board.default.moves_O?.map((position, index) => (
           <>
-            <BoxSelected
-              key={index}
-              x={position[0]}
-              z={position[1]}
-              color="blue"
-            />
+            <OPiece key={index} x={position[0]} z={position[1]} color="blue" />
           </>
         ))}
 
         {board.default.moves_X?.map((position, index) => (
           <>
-            <BoxSelected
+            <XPiece
               key={index}
               x={position[0]}
               z={position[1]}
               color="red"
-            />
+            ></XPiece>
           </>
         ))}
 
-        <primitive object={new THREE.AxesHelper(2)} />
+        <primitive object={new THREE.AxesHelper(0)} />
         <primitive object={new THREE.GridHelper(3, 3)} />
         <OrbitControls enabled={!isVictory} />
       </Canvas>
