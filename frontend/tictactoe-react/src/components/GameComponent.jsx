@@ -13,6 +13,8 @@ export default function GameComponent() {
   const [x, setX] = useState(0);
   const [z, setZ] = useState(0);
 
+  const [role, setRole] = useState("");
+
   const [board, setBoard] = useState({
     default: {
       moves_X: [],
@@ -33,7 +35,8 @@ export default function GameComponent() {
     });
 
     socketRef.current.on("assignedRole", (role) => {
-      localStorage.setItem("playerRole", role);
+      console.log("roleeeee", role);
+      setRole(role);
     });
 
     socketRef.current.on("state", (state) => {
@@ -76,7 +79,6 @@ export default function GameComponent() {
 
   useEffect(() => {
     const handleKeyDown = (event) => {
-      if (isVictory) return;
       switch (event.key.toLowerCase()) {
         case "a":
           setX((prev) => (prev - 1 < -1 ? 1 : prev - 1));
@@ -91,8 +93,8 @@ export default function GameComponent() {
           setZ((prev) => (prev + 1 > 1 ? -1 : prev + 1));
           break;
         case " ":
+          if (isVictory || role !== board.default.turn) return;
           socketRef.current.emit("makeMove", [x, z]);
-
           break;
         default:
           break;
@@ -112,7 +114,7 @@ export default function GameComponent() {
         <ambientLight intensity={0.5} />
         <pointLight position={[10, 10, 10]} />
 
-        <Box x={x} z={z} />
+        {role == board.default.turn && <Box x={x} z={z} />}
 
         {board.default.moves_O?.map((position, index) => (
           <>
