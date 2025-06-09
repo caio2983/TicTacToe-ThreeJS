@@ -27,6 +27,7 @@ export default function GameComponent() {
       turn: "X",
       victory: false,
       draw: false,
+      winner: null,
     },
   });
 
@@ -58,6 +59,7 @@ export default function GameComponent() {
       console.log(currentBoard);
       setBoard(currentBoard);
       setVictory(currentBoard.default.victory);
+      setWinner(currentBoard.default.winner);
       if (
         !board.default.victory &&
         board.default.moves_O.length + board.default.moves_X.length === 9
@@ -73,6 +75,7 @@ export default function GameComponent() {
 
   const [isVictory, setVictory] = useState(false);
   const [isDraw, setDraw] = useState(false);
+  const [winner, setWinner] = useState(null);
 
   function isOccupied(x, z, currentBoard) {
     const taken = [
@@ -93,6 +96,7 @@ export default function GameComponent() {
         turn: "X",
         victory: false,
         draw: false,
+        winner: null,
       },
     });
 
@@ -146,7 +150,8 @@ export default function GameComponent() {
     <>
       <button onClick={resetGame}>Reset</button>
       <button onClick={testLength}>Test</button>
-      {isVictory && <VictoryAlert onReset={resetGame} />}
+      {isVictory && <VictoryAlert onReset={resetGame} winner={winner} />}
+
       {isDraw && <DrawAlert onReset={resetGame}></DrawAlert>}
       <Canvas camera={{ position: [2, 2, 2], fov: 85 }} className="canvas">
         <ambientLight intensity={0.5} />
@@ -154,15 +159,20 @@ export default function GameComponent() {
 
         {role === board.default.turn ? (
           role === "O" ? (
-            <OPiece x={x} z={z} color="orange" notSelected={true} />
+            <OPiece x={x} z={z} color="#FFF700" notSelected={true} />
           ) : (
-            <XPiece x={x} z={z} color="orange" notSelected={true}></XPiece>
+            <XPiece x={x} z={z} color="#FFF700" notSelected={true}></XPiece>
           )
         ) : null}
 
         {board.default.moves_O?.map((position, index) => (
           <>
-            <OPiece key={index} x={position[0]} z={position[1]} color="blue" />
+            <OPiece
+              key={index}
+              x={position[0]}
+              z={position[1]}
+              color="#39FF14"
+            />
           </>
         ))}
 
@@ -172,13 +182,13 @@ export default function GameComponent() {
               key={index}
               x={position[0]}
               z={position[1]}
-              color="red"
+              color="#9B30FF"
             ></XPiece>
           </>
         ))}
 
         <primitive object={new THREE.AxesHelper(0)} />
-        {/* <primitive object={new THREE.GridHelper(3, 3)} /> */}
+
         <NeonRedGrid3x3></NeonRedGrid3x3>
         <primitive object={infiniteGridHelper} />
         <OrbitControls enabled={!isVictory} />
