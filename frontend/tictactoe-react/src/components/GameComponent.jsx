@@ -72,6 +72,16 @@ export default function GameComponent() {
   const [isVictory, setVictory] = useState(false);
   const [isDraw, setDraw] = useState(false);
 
+  function isOccupied(x, z, currentBoard) {
+    const taken = [
+      ...currentBoard.default.moves_X,
+      ...currentBoard.default.moves_O,
+    ];
+    return taken.some(
+      ([occupied_x, occupied_z]) => occupied_x === x && occupied_z === z
+    );
+  }
+
   // The function below is executed when the user clicks the button in VictoryAlert component
   function resetGame() {
     setBoard({
@@ -110,7 +120,13 @@ export default function GameComponent() {
           setZ((prev) => (prev + 1 > 1 ? -1 : prev + 1));
           break;
         case " ":
-          if (isVictory || role !== board.default.turn) return;
+          if (
+            isVictory ||
+            role !== board.default.turn ||
+            isOccupied(x, z, board)
+          )
+            return;
+
           socketRef.current.emit("makeMove", [x, z]);
           break;
         default:
