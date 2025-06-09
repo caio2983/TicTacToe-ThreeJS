@@ -114,6 +114,7 @@ const EMPTY_BOARD = () => ({
   turn: "X",
   victory: false,
   draw: false,
+  winner: null,
 });
 
 const players = [];
@@ -153,6 +154,7 @@ io.on("connection", (socket) => {
 
       if (victoryCheck(move, current_board.moves_X)) {
         current_board.victory = true;
+        current_board.winner = "X";
         console.log("Vitória do jogador X");
       }
     } else {
@@ -161,6 +163,7 @@ io.on("connection", (socket) => {
 
       if (victoryCheck(move, current_board.moves_O)) {
         current_board.victory = true;
+        current_board.winner = "O";
         console.log("Vitória do jogador O");
       }
 
