@@ -14,7 +14,6 @@ export default function GameComponent() {
   const [z, setZ] = useState(0);
 
   const [board, setBoard] = useState({ moves: [], turn: "X", victory: false });
-  const [opponentPositions, setOpponentPositions] = useState([]);
 
   const socketRef = useRef(null);
 
@@ -39,11 +38,9 @@ export default function GameComponent() {
       console.log("Conectado com ID:", socketRef.current.id);
     });
 
-    socketRef.current.on("makeMove", (playerMoves) => {
-      console.log("Jogadas recebidas :", playerMoves);
-      console.log("Jogadas recebidas keys:", Object.entries(playerMoves));
-
-      console.log("Jogadas recebidas values:", Object.values(playerMoves));
+    socketRef.current.on("makeMove", (currentBoard) => {
+      setBoard(currentBoard);
+      console.log(currentBoard);
     });
 
     return () => {
@@ -52,7 +49,6 @@ export default function GameComponent() {
   }, []);
 
   // Positions that the user selected to place a piece
-  const [selectedPositions, setSelectedPositions] = useState([]);
 
   // The three states below are used to verify a possible victory in each piece placement
   const [testVictoryColumns, setTestVictoryColumns] = useState([]);
@@ -65,7 +61,7 @@ export default function GameComponent() {
   function resetGame() {
     setX(0);
     setZ(0);
-    setSelectedPositions([]);
+    // setSelectedPositions([]);
     setTestVictoryColumns([]);
     setTestVictoryRows([]);
     setTestVictoryDiagonals([]);
@@ -145,33 +141,33 @@ export default function GameComponent() {
     };
   }
 
-  function victoryCheck() {
-    const checkGroup = (group) =>
-      group.length > 0 &&
-      group.every((pos) =>
-        selectedPositions.some(
-          (selected) => selected.x === pos.x && selected.z === pos.z
-        )
-      );
+  // function victoryCheck() {
+  //   const checkGroup = (group) =>
+  //     group.length > 0 &&
+  //     group.every((pos) =>
+  //       selectedPositions.some(
+  //         (selected) => selected.x === pos.x && selected.z === pos.z
+  //       )
+  //     );
 
-    if (
-      checkGroup(testVictoryColumns) ||
-      checkGroup(testVictoryRows) ||
-      checkGroup(testVictoryDiagonals)
-    ) {
-      console.log("Vitória!");
-      setVictory(true);
-    }
-  }
+  //   if (
+  //     checkGroup(testVictoryColumns) ||
+  //     checkGroup(testVictoryRows) ||
+  //     checkGroup(testVictoryDiagonals)
+  //   ) {
+  //     console.log("Vitória!");
+  //     setVictory(true);
+  //   }
+  // }
 
-  useEffect(() => {
-    victoryCheck();
-  }, [
-    selectedPositions,
-    testVictoryColumns,
-    testVictoryRows,
-    testVictoryDiagonals,
-  ]);
+  // useEffect(() => {
+  //   victoryCheck();
+  // }, [
+  //   selectedPositions,
+  //   testVictoryColumns,
+  //   testVictoryRows,
+  //   testVictoryDiagonals,
+  // ]);
 
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -190,10 +186,10 @@ export default function GameComponent() {
           setZ((prev) => (prev + 1 > 1 ? -1 : prev + 1));
           break;
         case " ":
-          setSelectedPositions((prev) => {
-            const exists = prev.some((pos) => pos.x === x && pos.z === z);
-            return exists ? prev : [...prev, { x, z }];
-          });
+          // setSelectedPositions((prev) => {
+          //   const exists = prev.some((pos) => pos.x === x && pos.z === z);
+          //   return exists ? prev : [...prev, { x, z }];
+          // });
 
           socketRef.current.emit("makeMove", [x, z]);
 
@@ -222,9 +218,25 @@ export default function GameComponent() {
 
         <Box x={x} z={z} />
 
-        {selectedPositions.map((pos, index) => (
+        {board.default.moves_O?.map((position, index) => (
           <>
-            <BoxSelected key={index} x={pos.x} z={pos.z} />
+            <BoxSelected
+              key={index}
+              x={position[0]}
+              z={position[1]}
+              color="blue"
+            />
+          </>
+        ))}
+
+        {board.default.moves_X?.map((position, index) => (
+          <>
+            <BoxSelected
+              key={index}
+              x={position[0]}
+              z={position[1]}
+              color="red"
+            />
           </>
         ))}
 
