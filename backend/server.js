@@ -13,7 +13,8 @@ const io = new Server(httpServer, {
 });
 
 const EMPTY_BOARD = () => ({
-  moves: [],
+  moves_X: [],
+  moves_O: [],
   turn: "X",
   victory: false,
 });
@@ -26,6 +27,7 @@ io.on("connection", (socket) => {
   const room = "default";
   if (!boards.has(room)) boards.set(room, EMPTY_BOARD());
   socket.join(room);
+
   if (players.length < 2) {
     const role = players.length === 1 ? "X" : "O";
     players.push({ id: socket.id, role: role });
@@ -41,13 +43,20 @@ io.on("connection", (socket) => {
   console.log("Novo cliente conectado:", socket.id);
 
   socket.on("makeMove", (data) => {
-    console.log("Move made by", data);
+    const player_who_moved = players.find((player) => player.id === socket.id);
+    const current_board = boards.get("default");
 
-    player_who_moved = players.find((player) => player.id === socket.id);
-    playerMoves.set(data, player_who_moved.role);
-    console.log(playerMoves);
+    if (player_who_moved.role === "X") {
+      current_board.moves_X.push(data);
+      current_board.turn = "O";
+    } else {
+      current_board.moves_O.push(data);
+      current_board.turn = "X";
+    }
 
-    socket.emit("makeMove", Object.fromEntries(playerMoves));
+    console.log("Move made by", player_who_moved);
+
+    io.emit("makeMove", Object.fromEntries(boards));
   });
 
   socket.on("disconnect", () => {

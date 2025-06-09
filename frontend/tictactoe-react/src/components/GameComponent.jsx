@@ -14,6 +14,7 @@ export default function GameComponent() {
   const [z, setZ] = useState(0);
 
   const [board, setBoard] = useState({ moves: [], turn: "X", victory: false });
+  const [opponentPositions, setOpponentPositions] = useState([]);
 
   const socketRef = useRef(null);
 
@@ -41,6 +42,7 @@ export default function GameComponent() {
     socketRef.current.on("makeMove", (playerMoves) => {
       console.log("Jogadas recebidas :", playerMoves);
       console.log("Jogadas recebidas keys:", Object.entries(playerMoves));
+
       console.log("Jogadas recebidas values:", Object.values(playerMoves));
     });
 
@@ -195,9 +197,9 @@ export default function GameComponent() {
 
           socketRef.current.emit("makeMove", [x, z]);
 
-          setTestVictoryColumns(victoryPositions(x, z).columns);
-          setTestVictoryRows(victoryPositions(x, z).rows);
-          setTestVictoryDiagonals(victoryPositions(x, z).diagonals);
+          // setTestVictoryColumns(victoryPositions(x, z).columns);
+          // setTestVictoryRows(victoryPositions(x, z).rows);
+          // setTestVictoryDiagonals(victoryPositions(x, z).diagonals);
 
           break;
         default:
