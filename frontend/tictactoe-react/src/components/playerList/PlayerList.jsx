@@ -1,5 +1,5 @@
 import React from "react";
-import PlayerCard from "./playerCard";
+import PlayerCard from "./PlayerCard";
 
 export default function PlayerList({ players }) {
   return (

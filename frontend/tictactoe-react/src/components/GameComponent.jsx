@@ -11,7 +11,7 @@ import OPiece from "./pieces/OPiece";
 import XPiece from "./pieces/XPiece";
 import { InfiniteGridHelper } from "./grid";
 import NeonRedGrid3x3 from "./NeonRedGrid3x3";
-import PlayerList from "./playerList/playerList";
+import PlayerList from "./PlayerList";
 import WaitAlert from "./alerts/WaitAlert";
 
 export default function GameComponent() {
