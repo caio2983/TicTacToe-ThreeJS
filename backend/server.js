@@ -172,7 +172,10 @@ io.on("connection", (socket) => {
       console.log("O length: ", current_board.moves_O.length);
       console.log("X length: ", current_board.moves_X.length);
 
-      if (current_board.moves_O.length + current_board.moves_X.length == 8) {
+      if (
+        current_board.moves_O.length + current_board.moves_X.length == 8 &&
+        current_board.victory == false
+      ) {
         current_board.draw = true;
         console.log("Empate");
       }
