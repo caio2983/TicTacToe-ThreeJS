@@ -3,18 +3,25 @@ import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 
-import VictoryAlert from "./VictoryAlert";
+import VictoryAlert from "./alerts/VictoryAlert";
 
 import { io } from "socket.io-client";
-import DrawAlert from "./DrawAlert";
+import DrawAlert from "./alerts/DrawAlert";
 import OPiece from "./pieces/OPiece";
 import XPiece from "./pieces/XPiece";
 import { InfiniteGridHelper } from "./grid";
 import NeonRedGrid3x3 from "./NeonRedGrid3x3";
+import PlayerList from "./playerList/playerList";
 
 export default function GameComponent() {
   const [x, setX] = useState(0);
   const [z, setZ] = useState(0);
+
+  const [isVictory, setVictory] = useState(false);
+  const [isDraw, setDraw] = useState(false);
+  const [winner, setWinner] = useState(null);
+  const [players, setPlayers] = useState(null);
+
   const infiniteGridHelper = new InfiniteGridHelper();
   infiniteGridHelper.position.y = -5;
 
@@ -55,6 +62,10 @@ export default function GameComponent() {
       console.log("Conectado com ID:", socketRef.current.id);
     });
 
+    socketRef.current.on("connectedPlayers", (players) => {
+      setPlayers(players);
+    });
+
     socketRef.current.on("makeMove", (currentBoard) => {
       console.log(currentBoard);
       setBoard(currentBoard);
@@ -72,10 +83,6 @@ export default function GameComponent() {
       socketRef.current.disconnect();
     };
   }, []);
-
-  const [isVictory, setVictory] = useState(false);
-  const [isDraw, setDraw] = useState(false);
-  const [winner, setWinner] = useState(null);
 
   function isOccupied(x, z, currentBoard) {
     const taken = [
@@ -104,10 +111,6 @@ export default function GameComponent() {
     setDraw(false);
 
     socketRef.current.emit("resetBoard");
-  }
-
-  function testLength() {
-    console.log(board.default.moves_O.length + board.default.moves_X.length);
   }
 
   useEffect(() => {
@@ -148,8 +151,6 @@ export default function GameComponent() {
 
   return (
     <>
-      <button onClick={resetGame}>Reset</button>
-      <button onClick={testLength}>Test</button>
       {isVictory && <VictoryAlert onReset={resetGame} winner={winner} />}
 
       {isDraw && <DrawAlert onReset={resetGame}></DrawAlert>}
@@ -193,6 +194,7 @@ export default function GameComponent() {
         <primitive object={infiniteGridHelper} />
         <OrbitControls enabled={!isVictory} />
       </Canvas>
+      {players && <PlayerList players={players}></PlayerList>}
     </>
   );
 }
