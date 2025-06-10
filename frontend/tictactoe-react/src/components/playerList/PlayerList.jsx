@@ -3,7 +3,7 @@ import PlayerCard from "./playerCard";
 
 export default function PlayerList({ players }) {
   return (
-    <div className="player-list-container">
+    <div className="floating-rectangle">
       <span className="player-list-container-title">Jogadores conectados</span>
       <div className="component-overlay"></div>
       {players.map((player) => (

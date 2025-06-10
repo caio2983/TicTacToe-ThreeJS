@@ -22,13 +22,13 @@ export default function PlayerCard({ player }) {
       </div>
 
       <span
-        className="player-id"
+        className="text-low-shadow"
         style={{
           color: player.role === "O" ? "#39FF14" : "#9B30FF",
           textShadow:
             player.role === "O"
-              ? "0 0 1px #39FF14, 0 0 2px #39FF14, 0 0 3px #39FF14"
-              : "0 0 1px #9B30FF, 0 0 2px #9B30FF, 0 0 3px #9B30FF",
+              ? "0 0 0.5px #39FF14, 0 0 1px #39FF14"
+              : "0 0 0.5px #9B30FF, 0 0 1px #9B30FF",
         }}
       >
         {player.id}
