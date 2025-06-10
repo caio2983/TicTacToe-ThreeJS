@@ -12,6 +12,7 @@ import XPiece from "./pieces/XPiece";
 import { InfiniteGridHelper } from "./grid";
 import NeonRedGrid3x3 from "./NeonRedGrid3x3";
 import PlayerList from "./playerList/playerList";
+import WaitAlert from "./alerts/WaitAlert";
 
 export default function GameComponent() {
   const [x, setX] = useState(0);
@@ -195,6 +196,9 @@ export default function GameComponent() {
         <OrbitControls enabled={!isVictory} />
       </Canvas>
       {players && <PlayerList players={players}></PlayerList>}
+      {role !== board.default.turn && (
+        <WaitAlert playing={board.default.turn}></WaitAlert>
+      )}
     </>
   );
 }
