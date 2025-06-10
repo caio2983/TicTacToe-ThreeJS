@@ -111,6 +111,7 @@ function victoryCheck([x, z], playerMoves) {
 const EMPTY_BOARD = () => ({
   moves_X: [],
   moves_O: [],
+
   turn: "X",
   victory: false,
   draw: false,
@@ -138,7 +139,8 @@ io.on("connection", (socket) => {
     return;
   }
 
-  console.log("Novo cliente conectado:", socket.id);
+  io.emit("connectedPlayers", players);
+
   socket.on("makeMove", (data) => {
     const player_who_moved = players.find((player) => player.id === socket.id);
     const current_board = boards.get("default");
