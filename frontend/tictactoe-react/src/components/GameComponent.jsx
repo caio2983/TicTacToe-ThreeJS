@@ -72,12 +72,7 @@ export default function GameComponent() {
       setBoard(currentBoard);
       setVictory(currentBoard.default.victory);
       setWinner(currentBoard.default.winner);
-      if (
-        !board.default.victory &&
-        board.default.moves_O.length + board.default.moves_X.length === 9
-      ) {
-        setDraw(true);
-      }
+      setDraw(currentBoard.default.draw);
     });
 
     return () => {
@@ -195,7 +190,9 @@ export default function GameComponent() {
         <primitive object={infiniteGridHelper} />
         <OrbitControls enabled={!isVictory} />
       </Canvas>
+
       {players && <PlayerList players={players}></PlayerList>}
+
       {role !== board.default.turn && (
         <WaitAlert playing={board.default.turn}></WaitAlert>
       )}
