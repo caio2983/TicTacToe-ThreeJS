@@ -1,13 +1,13 @@
 import { Canvas } from "@react-three/fiber";
 import React from "react";
 import * as THREE from "three";
-import XPiece from "./pieces/XPiece";
-import OPiece from "./pieces/OPiece";
+import XPiece from "../pieces/XPiece";
+import OPiece from "../pieces/OPiece";
 
 export default function VictoryAlert({ onReset, winner }) {
   return (
     <div className="victory-alert">
-      <div className="victory-alert-overlay"></div>
+      <div className="component-overlay"></div>
 
       <div className="victory-alert-inside">
         <span className="winner-text">Vencedor : </span>
@@ -19,9 +19,9 @@ export default function VictoryAlert({ onReset, winner }) {
 
             <directionalLight position={[0, 1, 1]} intensity={1} />
             {winner == "O" ? (
-              <OPiece x={0} z={0} y={0} color="red" won={true}></OPiece>
+              <OPiece x={0} z={0} y={0} color="#39FF14" won={true}></OPiece>
             ) : (
-              <XPiece x={0} z={0} y={0} color="red" won={true}></XPiece>
+              <XPiece x={0} z={0} y={0} color="#9B30FF" won={true}></XPiece>
             )}
           </Canvas>
         </div>
